@@ -1,0 +1,58 @@
+//SPDX-License-Identifier: MIT
+pragma solidity 0.8.7;
+
+import "./Price.sol";
+
+contract work is PriceConsumerV3 {
+    
+    address owner;
+    address buyer;
+
+    bool isDeposit;
+    bool isUpload;
+
+    string link;
+
+    uint priceService;
+
+    event Deposited(uint _amount, address _user);
+    event Uploaded(string data, address _user);
+
+    constructor(address _buyer, uint _cost) {
+        owner = msg.sender;
+        buyer = _buyer; //0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2
+        priceService = _cost;
+    }
+
+    modifier Owner() {
+        require(owner == msg.sender);
+        _;
+    }
+
+    modifier MyBuyer() {
+        require(buyer == msg.sender);
+        _;
+    }
+
+    function deposit() public payable MyBuyer {
+        require(msg.value == getPriceRate(priceService), "Verify pay.");
+        uint amount = msg.value;
+        isDeposit = true;
+        emit Deposited(amount, msg.sender);
+    }
+
+    function upload(string memory _link) public Owner {
+        require(isDeposit == true, "Wait for deposit.");
+        link = _link;
+        isUpload = true;
+        emit Uploaded(link, owner);
+    }
+
+    function withdraw() public payable {
+        require(address(this).balance > 0, "There's not money.");
+        require(isUpload == true, "Owner has to add document.");
+        isDeposit = false;
+        isUpload = false;
+        payable(owner).transfer(address(this).balance);
+    }
+}

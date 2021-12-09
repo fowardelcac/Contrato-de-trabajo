@@ -48,7 +48,7 @@ contract work is PriceConsumerV3 {
         emit Uploaded(link, owner);
     }
 
-    function withdraw() public payable {
+    function withdraw() public payable Owner {
         require(address(this).balance > 0, "There's not money.");
         require(isUpload == true, "Owner has to add document.");
         isDeposit = false;
